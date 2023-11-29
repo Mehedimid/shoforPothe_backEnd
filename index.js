@@ -52,6 +52,22 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/guides/reviews/:id" ,  async (req, res) =>{
+      const id = req.params ;
+      const newReview = req.body; 
+      console.log(newReview)
+      const updateDoc = await guidesCollection.updateOne(
+        {_id : new ObjectId(id)},
+        {
+          $push:{
+            reviews: newReview
+          }
+        }
+      )
+      res.send(updateDoc)
+
+    })
+
     // ============= wishlist api starts ============
 
     app.get("/wishlist", async (req, res) => {
