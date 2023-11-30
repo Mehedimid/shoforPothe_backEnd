@@ -27,6 +27,8 @@ async function run() {
     const gallaryCollection = client.db("shoforPotheDB").collection("gallary");
     const guidesCollection = client.db("shoforPotheDB").collection("guides");
     const wishCollection = client.db("shoforPotheDB").collection("wishlist");
+    const bookingCollection = client.db("shoforPotheDB").collection("bookings");
+    const userCollection = client.db("shoforPotheDB").collection("users");
 
     // ============= packages api starts ============
     app.get("/packages", async (req, res) => {
@@ -40,11 +42,38 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/stories", async (req, res) => {
+      const story = req.body
+      const result = await storyCollection.insertOne(story)
+      res.send(result);
+    });
+
+
     // ============= gallary  type api starts ============
     app.get("/gallary", async (req, res) => {
       const result = await gallaryCollection.find().toArray();
       res.send(result);
     });
+
+
+
+    // ================= users api =================
+    app.post("/users", async (req, res) => {
+      const user = req.body ;
+      const query = {email : user.email}
+      const existingUser = await userCollection.findOne(query)
+      if (existingUser) {
+        return res.send({ message: "user exist already", insertedId: null });
+      }
+      const result = await userCollection.insertOne(user)
+      res.send(result);
+    });
+
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
 
     // ============= GUIDES   api starts ============
     app.get("/guides", async (req, res) => {
@@ -52,21 +81,20 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/guides/reviews/:id" ,  async (req, res) =>{
-      const id = req.params ;
-      const newReview = req.body; 
-      console.log(newReview)
+    app.patch("/guides/reviews/:id", async (req, res) => {
+      const id = req.params;
+      const newReview = req.body;
+      console.log(newReview);
       const updateDoc = await guidesCollection.updateOne(
-        {_id : new ObjectId(id)},
+        { _id: new ObjectId(id) },
         {
-          $push:{
-            reviews: newReview
-          }
+          $push: {
+            reviews: newReview,
+          },
         }
-      )
-      res.send(updateDoc)
-
-    })
+      );
+      res.send(updateDoc);
+    });
 
     // ============= wishlist api starts ============
 
@@ -98,6 +126,28 @@ async function run() {
       const result = await wishCollection.deleteOne(query);
       res.send(result);
     });
+
+    // ============= BOOking api starts ============
+
+    app.get("/bookings", async (req, res) => {
+      const result = await bookingCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/bookings", async (req, res) => {
+      const booking = req.body
+      const result = await bookingCollection.insertOne(booking)
+      res.send(result);
+    });
+
+    app.delete("/bookings/:id", async (req, res) => {
+      const id = req.params.id
+      const query = {_id : new ObjectId(id)}
+      const result = await bookingCollection.deleteOne(query)
+      res.send(result);
+    })
+
+
 
     // ______________________________________________________________________________
     // await client.db("admin").command({ ping: 1 });
