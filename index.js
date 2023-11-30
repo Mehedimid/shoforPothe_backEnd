@@ -36,6 +36,12 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/packages", async (req, res) => {
+      const pack = req.body;
+      const result = await packageCollection.insertOne(pack);
+      res.send(result);
+    });
+
     // ============= stories api starts ============
     app.get("/stories", async (req, res) => {
       const result = await storyCollection.find().toArray();
@@ -43,11 +49,10 @@ async function run() {
     });
 
     app.post("/stories", async (req, res) => {
-      const story = req.body
-      const result = await storyCollection.insertOne(story)
+      const story = req.body;
+      const result = await storyCollection.insertOne(story);
       res.send(result);
     });
-
 
     // ============= gallary  type api starts ============
     app.get("/gallary", async (req, res) => {
@@ -55,29 +60,79 @@ async function run() {
       res.send(result);
     });
 
-
-
     // ================= users api =================
-    app.post("/users", async (req, res) => {
-      const user = req.body ;
-      const query = {email : user.email}
-      const existingUser = await userCollection.findOne(query)
-      if (existingUser) {
-        return res.send({ message: "user exist already", insertedId: null });
-      }
-      const result = await userCollection.insertOne(user)
-      res.send(result);
-    });
-
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let admin = false;
+      if (user) {
+        admin = user?.role == "admin";
+      }
+      res.send({ admin });
+    });
+
+    app.get("/users/guide/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let guide = false;
+      if (user) {
+        guide = user?.role == "guide";
+      }
+      res.send({ guide });
+    });
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "user exist already", insertedId: null });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.patch("/users/guide/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: "guide",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
 
     // ============= GUIDES   api starts ============
     app.get("/guides", async (req, res) => {
       const result = await guidesCollection.find().toArray();
+      res.send(result);
+    });
+
+
+    app.post("/guides", async (req, res) => {
+      const story = req.body;
+      const result = await storyCollection.insertOne(story);
       res.send(result);
     });
 
@@ -135,19 +190,17 @@ async function run() {
     });
 
     app.post("/bookings", async (req, res) => {
-      const booking = req.body
-      const result = await bookingCollection.insertOne(booking)
+      const booking = req.body;
+      const result = await bookingCollection.insertOne(booking);
       res.send(result);
     });
 
     app.delete("/bookings/:id", async (req, res) => {
-      const id = req.params.id
-      const query = {_id : new ObjectId(id)}
-      const result = await bookingCollection.deleteOne(query)
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
       res.send(result);
-    })
-
-
+    });
 
     // ______________________________________________________________________________
     // await client.db("admin").command({ ping: 1 });
