@@ -129,17 +129,28 @@ async function run() {
       res.send(result);
     });
 
-
     app.post("/guides", async (req, res) => {
-      const story = req.body;
-      const result = await storyCollection.insertOne(story);
+      const guide = req.body;
+
+      const query1 = {name : guide.name}
+      const existingGUide = await guidesCollection.findOne(query1);
+      if(existingGUide){
+        return res.send({message1:'Guide name is not available'})
+      }
+
+      const query2 = {email :guide.email}
+      const existingEmail = await guidesCollection.findOne(query2);
+      if(existingEmail){
+         return res.send({message2:'Your Profile is already exist'})
+      }
+
+      const result = await guidesCollection.insertOne(guide);
       res.send(result);
     });
 
     app.patch("/guides/reviews/:id", async (req, res) => {
       const id = req.params;
       const newReview = req.body;
-      console.log(newReview);
       const updateDoc = await guidesCollection.updateOne(
         { _id: new ObjectId(id) },
         {
