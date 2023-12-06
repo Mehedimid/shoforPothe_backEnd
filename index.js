@@ -206,12 +206,50 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/bookings/reject/:id", async (req, res) => {
+   try{
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+    const updateStatus = {
+      $set : {
+        status: 'rejected'
+      }
+    }
+    const result = await bookingCollection.updateOne(filter, updateStatus);
+    res.send(result);
+   }catch (err) {
+    res.send(err);
+    }
+    });
+
+    app.patch("/bookings/accept/:id", async (req, res) => {
+      try{
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedStatus = {
+          $set : {
+            status: 'accepted'
+          }
+        }
+        const result = await bookingCollection.updateOne(filter, updatedStatus);
+        res.send(result);
+      }
+      catch (err) {
+        res.send(err);
+        }
+    });
+
+
     app.delete("/bookings/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await bookingCollection.deleteOne(query);
       res.send(result);
     });
+
+
+
+    
 
     // ______________________________________________________________________________
     // await client.db("admin").command({ ping: 1 });
